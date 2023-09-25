@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-class TransactionForm extends StatelessWidget {
-  final void Function(String, double) onSubmit;
-  final titleController = TextEditingController();
-  final valueController = TextEditingController();
+class TransactionForm extends StatefulWidget {
+  final void Function(String, double, DateTime) onSubmit;
 
-  TransactionForm({super.key, required this.onSubmit});
+  const TransactionForm({super.key, required this.onSubmit});
+
+  @override
+  State<TransactionForm> createState() => _TransactionFormState();
+}
+
+class _TransactionFormState extends State<TransactionForm> {
+  final _titleController = TextEditingController();
+  final _valueController = TextEditingController();
+  DateTime _selectedDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
@@ -16,30 +24,48 @@ class TransactionForm extends StatelessWidget {
         child: Column(
           children: [
             TextField(
-              controller: titleController,
+              controller: _titleController,
+              onSubmitted: (_) => _submitForm(),
               decoration: const InputDecoration(
                 labelText: 'Título',
               ),
             ),
             TextField(
-              controller: valueController,
+              controller: _valueController,
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              onSubmitted: (_) => _submitForm(),
               decoration: const InputDecoration(
                 labelText: 'Valor \$',
               ),
             ),
+            SizedBox(
+              height: 70,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(DateFormat('dd/MM/y').format(_selectedDate)),
+                  ),
+                  TextButton(
+                    onPressed: _showDatePicker,
+                    child: Text(
+                      'Selecionar data',
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  )
+                ],
+              ),
+            ),
             Align(
               alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () {
-                  final title = titleController.text;
-                  final value = double.tryParse(valueController.text) ?? 0;
-                  onSubmit(title, value);
-                },
+              child: ElevatedButton(
+                onPressed: _submitForm,
                 child: const Text(
                   "Nova transação",
                   style: TextStyle(
-                    color: Colors.purple,
-                  ),
+                      color: Colors.white, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -47,5 +73,29 @@ class TransactionForm extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _showDatePicker() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2019),
+      lastDate: DateTime.now(),
+    ).then((pickedDate) {
+      if (pickedDate != null) {
+        setState(() {
+          _selectedDate = pickedDate;
+        });
+      }
+    });
+  }
+
+  void _submitForm() {
+    final title = _titleController.text;
+    final value = double.tryParse(_valueController.text);
+
+    if (title.isNotEmpty && value != null) {
+      widget.onSubmit(title, value, _selectedDate);
+    }
   }
 }
