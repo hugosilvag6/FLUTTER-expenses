@@ -1,5 +1,7 @@
+import 'package:despesas_pessoais/components/adaptative_button.dart';
+import 'package:despesas_pessoais/components/adaptative_date_picker.dart';
+import 'package:despesas_pessoais/components/adaptative_textfield.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class TransactionForm extends StatefulWidget {
   final void Function(String, double, DateTime) onSubmit;
@@ -17,77 +19,47 @@ class _TransactionFormState extends State<TransactionForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            TextField(
-              controller: _titleController,
-              onSubmitted: (_) => _submitForm(),
-              decoration: const InputDecoration(
-                labelText: 'Título',
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: 10,
+            right: 10,
+            left: 10,
+            bottom: 10 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            children: [
+              AdaptativeTextfield(
+                controller: _titleController,
+                onSubmit: (_) => _submitForm(),
+                placeholder: 'Título',
               ),
-            ),
-            TextField(
-              controller: _valueController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              onSubmitted: (_) => _submitForm(),
-              decoration: const InputDecoration(
-                labelText: 'Valor \$',
+              AdaptativeTextfield(
+                controller: _valueController,
+                onSubmit: (_) => _submitForm(),
+                placeholder: 'Valor \$',
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
               ),
-            ),
-            SizedBox(
-              height: 70,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(DateFormat('dd/MM/y').format(_selectedDate)),
-                  ),
-                  TextButton(
-                    onPressed: _showDatePicker,
-                    child: Text(
-                      'Selecionar data',
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  )
-                ],
+              AdaptativeDatePicker(
+                selectedDate: _selectedDate,
+                onDateChanged: (newValue) {
+                  setState(() {
+                    _selectedDate = newValue;
+                  });
+                },
               ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text(
-                  "Nova transação",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: AdaptativeButton(
+                    label: 'Nova transação', onPressed: _submitForm),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  void _showDatePicker() {
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2019),
-      lastDate: DateTime.now(),
-    ).then((pickedDate) {
-      if (pickedDate != null) {
-        setState(() {
-          _selectedDate = pickedDate;
-        });
-      }
-    });
   }
 
   void _submitForm() {
